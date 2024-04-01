@@ -5,14 +5,59 @@ services:
       context: .
       dockerfile: Dockerfile
     image: autostudent:latest
-    environment:
+    environment: &app-environment
       TELEGRAM_TOKEN: ${TELEGRAM_TOKEN}
       PG_DSN: ${PG_DSN}
-    volumes:
-      - ./nltk_data:/root/nltk_data
+      RMQ_DSN: ${RMQ_DSN}
+      REDIS_DSN: ${REDIS_DSN}
     depends_on:
       db-migration:
         condition: service_completed_successfully
+      db:
+        condition: service_healthy
+      rmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      taskiq-worker:
+        condition: service_started
+
+  rmq:
+    image: rabbitmq:3.13.0-management-alpine
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+      RABBITMQ_DEFAULT_VHOST: "/"
+    ports:
+      - "127.0.0.1:5672:${RMQ_PORT}"
+      - "127.0.0.1:15672:15672"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q",  "ping"]
+      interval: 10s
+      timeout: 30s
+      retries: 5
+
+  taskiq-worker:
+    image: autostudent:latest
+    command: ["taskiq", "worker", "autostudent.broker:broker"]
+    environment: *app-environment
+    depends_on:
+      db:
+        condition: service_healthy
+      rmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  redis:
+    image: redis:7.2.4-alpine
+    ports:
+      - "127.0.0.1:6379:${REDIS_PORT}"
+    healthcheck:
+      test:  ["CMD", "redis-cli", "--raw", "incr", "ping" ]
+      interval: 10s
+      timeout: 30s
+      retries: 5
 
   db-migration:
     image: autostudent:latest
@@ -36,7 +81,7 @@ services:
       - ./shared/pg_db:/var/lib/postgresql/data
     restart: always
     ports:
-      - "45432:5432"
+      - "127.0.0.1:45432:${PG_PORT}"
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U $${POSTGRES_USER}" ]
       interval: 10s

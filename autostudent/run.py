@@ -11,6 +11,8 @@ from telebot.types import CallbackQuery
 
 from autostudent.settings import Settings
 from autostudent.tg_bot import callbacks, handlers
+from autostudent.broker import broker, add_one
+
 
 
 def register_handlers(bot: AsyncTeleBot, pool: asyncpg.Pool) -> None:
@@ -141,18 +143,30 @@ async def main():
     except asyncio.TimeoutError as e:
         msg = "Couldn't connect to database"
         raise RuntimeError(msg) from e
+    
+    await broker.startup()
 
-    bot = AsyncTeleBot(settings.telegram_token)
-    bot.settings = settings
-    bot.add_custom_filter(CallbackFilter())
-    register_handlers(bot, pool)
-    await bot.delete_my_commands()
-    await bot.set_my_commands(handlers.BOT_COMMANDS)
+    task = await add_one.kiq(1)
+    result = await task.wait_result()
+    print(f"Task execution took: {result.execution_time} seconds.")
+    if not result.is_err:
+        print(f"Returned value: {result.return_value}")
+    else:
+        print("Error found while executing task.")
 
-    try:
-        await bot.polling()
-    finally:
-        await pool.close()
+
+    # bot = AsyncTeleBot(settings.telegram_token)
+    # bot.settings = settings
+    # bot.add_custom_filter(CallbackFilter())
+    # register_handlers(bot, pool)
+    # await bot.delete_my_commands()
+    # await bot.set_my_commands(handlers.BOT_COMMANDS)
+
+    # try:
+    #     await bot.polling()
+    # finally:
+    #     await pool.close()
+    await broker.shutdown()
 
 
 if __name__ == "__main__":

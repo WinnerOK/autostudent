@@ -1,4 +1,25 @@
 # autostudent
+
+## TL;DR
+
+Поставить Python 3.11
+
+```bash
+make poetry-download
+make install
+make build-docker
+```
+
+Затем сделать 2 файла из `example.env`:
+1. `.env`: будет использоваться для docker compose
+2. `local.env`: если этот файл есть, то код из него будет брать значения. Подходит для локальной разработки
+
+
+Запустить машинерию для локальной разработки
+```bash
+docker compose up rmq redis db db-migration taskiq-worker
+```
+
 ## Installation
 
 1. Clone `git` repo:
