@@ -18,4 +18,8 @@ class Settings(BaseSettings):
     rmq_dsn: str = Field()
     meili_dsn: str = Field()
 
-    training_answer_separator: str = "---"
+    course_page_size: int = 10
+    subscription_icons: dict[bool, str] = {
+        True: '✅',
+        False: '❌',
+    }

@@ -1,19 +1,19 @@
-from textwrap import dedent
-
+import asyncpg
 from telebot.async_telebot import AsyncTeleBot
 from telebot.types import Message
 
-from autostudent.tg_bot.markups import language_level_markup
+from autostudent.repository.user import insert_user
+from autostudent.tg_bot.handlers.help import get_help_message
 
 
-async def start_handler(message: Message, bot: AsyncTeleBot):
-    await bot.send_message(
-        message.chat.id,
-        dedent(
-            f"""
-            Hi, {message.from_user.full_name}!
-            What is your English proficiency level?
-            """,
-        ),
-        reply_markup=language_level_markup(),
+async def start_handler(
+    message: Message,
+    bot: AsyncTeleBot,
+    pool: asyncpg.Pool,
+):
+    async with pool.acquire() as conn:
+        await insert_user(conn, message.chat.id)
+    await bot.reply_to(
+        message,
+        f"Привет, {message.from_user.full_name}!\n{get_help_message()}",
     )

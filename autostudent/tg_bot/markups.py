@@ -1,137 +1,51 @@
 from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
 
+from autostudent.repository.course import Course
 from autostudent.tg_bot.callbacks.types import (
-    TinderSessionAction,
-    TrainingExerciseStatus,
-    exit_training_data,
-    language_level_data,
-    tinder_session_data,
-    training_iteration_end_data,
-    training_iteration_start_data,
-    word_discovery_data,
+    SubscriptionStatus,
+    subscription_alter_status,
+    subscription_change_page,
+    subscription_done,
 )
 
 
-def language_level_markup() -> InlineKeyboardMarkup:
-    levels = ("A1", "A2", "B1", "B2", "C1", "C2")
+def subscription_markup(
+    subscription_icons: dict[bool, str],
+    courses: list[Course],
+    current_subscriptions: list[int],
+    current_page: int,
+    has_more: bool = True
+) -> InlineKeyboardMarkup:
+    current_subscriptions = set(current_subscriptions)
+
     keyboard = InlineKeyboardMarkup()
-    keyboard.add(
-        *[
+    for course in courses:
+        is_subscribed = course.id in current_subscriptions
+        keyboard.add(
             InlineKeyboardButton(
-                text=level,
-                callback_data=language_level_data.new(level=level.lower()),
-            )
-            for level in levels
-        ],
+                text=f"{subscription_icons[is_subscribed]} {course.name}",
+                callback_data=subscription_alter_status.new(
+                    target_status=SubscriptionStatus.from_bool(not is_subscribed),
+                    course_id=course.id,
+                )
+            ),
+            row_width=1,
+        )
+    keyboard.add(
+        InlineKeyboardButton(
+            text='⬅️' if current_page > 0 else '',
+            callback_data=subscription_change_page.new(page_num=current_page - 1) if current_page > 0 else "dummy"
+        ),
+        InlineKeyboardButton(
+            text='➡️' if has_more else '',
+            callback_data=subscription_change_page.new(page_num=current_page + 1) if has_more else "dummy"
+        ),
         row_width=2,
     )
-    return keyboard
-
-
-def training_iteration_start_markup(
-    word_id: int,
-    correct_count: int = 0,
-    incorrect_count: int = 0,
-) -> InlineKeyboardMarkup:
-    keyboard = InlineKeyboardMarkup()
-    keyboard.row_width = 2
     keyboard.add(
         InlineKeyboardButton(
-            text="Don't know ❌",
-            callback_data=training_iteration_end_data.new(
-                status=TrainingExerciseStatus.fail,
-                word_id=word_id,
-                correct_count=correct_count,
-                incorrect_count=incorrect_count + 1,
-            ),
-        ),
-        InlineKeyboardButton(
-            text="Know ✅",
-            callback_data=training_iteration_end_data.new(
-                status=TrainingExerciseStatus.passed,
-                word_id=word_id,
-                correct_count=correct_count + 1,
-                incorrect_count=incorrect_count,
-            ),
-        ),
-        InlineKeyboardButton(
-            text="Finish 🏁",
-            callback_data=exit_training_data.new(
-                correct_count=correct_count,
-                incorrect_count=incorrect_count,
-            ),
-        ),
-    )
-    return keyboard
-
-
-def training_iteration_end_markup(
-    status: TrainingExerciseStatus,
-    correct_count: int,
-    incorrect_count: int,
-) -> InlineKeyboardMarkup:
-    keyboard = InlineKeyboardMarkup()
-    keyboard.row_width = 2
-    keyboard.add(
-        InlineKeyboardButton(
-            text="Finish 🏁",
-            callback_data=exit_training_data.new(
-                correct_count=correct_count,
-                incorrect_count=incorrect_count,
-            ),
-        ),
-        InlineKeyboardButton(
-            text="Next ➡️",
-            callback_data=training_iteration_start_data.new(
-                previous_status=status,
-                correct_count=correct_count,
-                incorrect_count=incorrect_count,
-            ),
-        ),
-    )
-    return keyboard
-
-
-def add_to_vocabulary_markup(word: str) -> InlineKeyboardMarkup:
-    keyboard = InlineKeyboardMarkup()
-    keyboard.add(
-        InlineKeyboardButton(
-            text="Save for trainings 🔎",
-            callback_data=word_discovery_data.new(
-                word=word,
-            ),
-        ),
-    )
-    return keyboard
-
-
-def word_tinder_markup(session_id: int, word: str) -> InlineKeyboardMarkup:
-    keyboard = InlineKeyboardMarkup()
-    keyboard.row_width = 2
-    keyboard.add(
-        InlineKeyboardButton(
-            text="Skip ❌",
-            callback_data=tinder_session_data.new(
-                session_id=session_id,
-                word=word,
-                action=TinderSessionAction.skip,
-            ),
-        ),
-        InlineKeyboardButton(
-            text="Add to dict 💚",
-            callback_data=tinder_session_data.new(
-                session_id=session_id,
-                word=word,
-                action=TinderSessionAction.add,
-            ),
-        ),
-        InlineKeyboardButton(
-            text="Finish 🏁",
-            callback_data=tinder_session_data.new(
-                session_id=session_id,
-                word=word,
-                action=TinderSessionAction.finish,
-            ),
-        ),
+            text='Завершить',
+            callback_data=subscription_done.new()
+        )
     )
     return keyboard
