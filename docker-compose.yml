@@ -1,16 +1,17 @@
 version: "3.9"
+
+x-application-environment: &app-environment
+  TELEGRAM_TOKEN: ${TELEGRAM_TOKEN}
+  PG_DSN: ${PG_DSN}
+  RMQ_DSN: ${RMQ_DSN}
+  REDIS_DSN: ${REDIS_DSN}
+
 services:
-  app:
-    build:
-      context: .
-      dockerfile: Dockerfile
+  taskiq-worker:
     image: autostudent:latest
-    environment: &app-environment
-      TELEGRAM_TOKEN: ${TELEGRAM_TOKEN}
-      PG_DSN: ${PG_DSN}
-      RMQ_DSN: ${RMQ_DSN}
-      REDIS_DSN: ${REDIS_DSN}
-    depends_on:
+    command: ["taskiq", "worker", "autostudent.broker:broker"] # по дефолту импортирует к брокеру все tasks.py
+    environment: *app-environment
+    depends_on: &taskiq-deps
       db-migration:
         condition: service_completed_successfully
       db:
@@ -19,14 +20,57 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+
+  taskiq-sheduler:
+    image: autostudent:latest
+    command: ["taskiq", "scheduler", "autostudent.broker:scheduler"] # по дефолту импортирует к шедулеру все tasks.py
+    environment: *app-environment
+    depends_on: &taskiq-deps
+      db-migration:
+        condition: service_completed_successfully
+      db:
+        condition: service_healthy
+      rmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  meilisearch:
+    image: getmeili/meilisearch:v1.7
+    volumes:
+      - ./shared/meili_data:/meili_data
+    environment:
+      MEILI_ENV: development # TODO: change in real prod
+      MEILI_HTTP_ADDR: "localhost:${MEILI_PORT}"
+    ports:
+      - "127.0.0.1:7700:${MEILI_PORT}"
+    healthcheck:
+      test: ["CMD", "curl", "-f",  "http://localhost:${MEILI_PORT}/health"]
+      interval: 10s
+      timeout: 30s
+      retries: 5
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: autostudent:latest
+    environment: *app-environment
+    depends_on:
+      <<: *taskiq-deps
       taskiq-worker:
         condition: service_started
+      taskiq-sheduler:
+        condition: service_started
+      meilisearch:
+        condition: service_healthy
+
 
   rmq:
     image: rabbitmq:3.13.0-management-alpine
     environment:
-      RABBITMQ_DEFAULT_USER: guest
-      RABBITMQ_DEFAULT_PASS: guest
+      RABBITMQ_DEFAULT_USER: ${RMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RMQ_PASSWORD}
       RABBITMQ_DEFAULT_VHOST: "/"
     ports:
       - "127.0.0.1:5672:${RMQ_PORT}"
@@ -36,18 +80,6 @@ services:
       interval: 10s
       timeout: 30s
       retries: 5
-
-  taskiq-worker:
-    image: autostudent:latest
-    command: ["taskiq", "worker", "autostudent.broker:broker"]
-    environment: *app-environment
-    depends_on:
-      db:
-        condition: service_healthy
-      rmq:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
 
   redis:
     image: redis:7.2.4-alpine

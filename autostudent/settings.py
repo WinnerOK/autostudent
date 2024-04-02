@@ -16,5 +16,6 @@ class Settings(BaseSettings):
     pg_dsn: PostgresDsn = Field()
     redis_dsn: RedisDsn = Field()
     rmq_dsn: str = Field()
+    meili_dst: str = Field()
 
     training_answer_separator: str = "---"
