@@ -2,9 +2,6 @@ from enum import Enum
 
 from telebot.callback_data import CallbackData
 
-language_level_data = CallbackData("level", prefix="lang_level")
-
-
 class SubscriptionStatus(str, Enum):
     subscribed = "sub"
     unsubscribed = "unsub"
@@ -31,3 +28,5 @@ subscription_done = CallbackData(
     prefix="sub_d",
 )
 
+course_data = CallbackData("course", prefix="course")
+lesson_data = CallbackData("lesson", prefix="lesson")

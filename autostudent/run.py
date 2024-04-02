@@ -7,9 +7,9 @@ from telebot.asyncio_filters import AdvancedCustomFilter
 from telebot.callback_data import CallbackDataFilter
 from telebot.types import CallbackQuery
 
-from autostudent.broker import broker
 from autostudent.settings import Settings
-from autostudent.tg_bot import handlers
+from autostudent.tg_bot import callbacks, handlers
+from autostudent.broker import broker, add_one
 from autostudent.tg_bot.callbacks.subscription import (
     subscription_status_callback,
     subscription_done_callback,
@@ -20,6 +20,7 @@ from autostudent.tg_bot.callbacks.types import (
     subscription_done,
     subscription_change_page,
 )
+
 
 
 def register_handlers(bot: AsyncTeleBot, pool: asyncpg.Pool) -> None:
@@ -74,8 +75,41 @@ def register_handlers(bot: AsyncTeleBot, pool: asyncpg.Pool) -> None:
         pass_bot=True,
     )
 
+    bot.register_message_handler(
+        handlers.summary_handler,
+        commands=["summary"],
+        pass_bot=True,
+    )
 
-# Эта штука позволяет легко разделять колбэки
+    bot.register_callback_query_handler(
+        partial(
+            callbacks.course_data_callback,
+            pool=pool,
+        ),
+        func=None,
+        config=callbacks.course_data.filter(),
+        pass_bot=True,
+    )
+
+    bot.register_callback_query_handler(
+        partial(
+            callbacks.lesson_data_callback,
+            pool=pool,
+        ),
+        func=None,
+        config=callbacks.lesson_data.filter(),
+        pass_bot=True,
+    )
+
+    bot.register_callback_query_handler(
+        partial(
+            callbacks.lesson_data_callback,
+            pool=pool,
+        ),
+        func=None,
+        config=callbacks.lesson_data.filter(),
+        pass_bot=True,
+    )
 class CallbackFilter(AdvancedCustomFilter):
     key = "config"
 

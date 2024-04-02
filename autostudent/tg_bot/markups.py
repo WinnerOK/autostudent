@@ -6,6 +6,8 @@ from autostudent.tg_bot.callbacks.types import (
     subscription_alter_status,
     subscription_change_page,
     subscription_done,
+    course_data,
+    lesson_data,
 )
 
 
@@ -47,5 +49,35 @@ def subscription_markup(
             text='Завершить',
             callback_data=subscription_done.new()
         )
+    )
+    return keyboard
+
+def course_markup() -> InlineKeyboardMarkup:
+    courses = ("C++", "Algorithms")
+    keyboard = InlineKeyboardMarkup()
+    keyboard.add(
+        *[
+            InlineKeyboardButton(
+                text=course,
+                callback_data=course_data.new(course=course.lower()),
+            )
+            for course in courses
+        ],
+        row_width=2,
+    )
+    return keyboard
+
+
+def lesson_markup(lessons) -> InlineKeyboardMarkup:
+    keyboard = InlineKeyboardMarkup()
+    keyboard.add(
+        *[
+            InlineKeyboardButton(
+                text=lesson,
+                callback_data=lesson_data.new(lesson=lesson.lower()),
+            )
+            for lesson in lessons
+        ],
+        row_width=2,
     )
     return keyboard

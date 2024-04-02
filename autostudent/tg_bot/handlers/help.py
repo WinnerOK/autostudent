@@ -6,7 +6,8 @@ from telebot.types import BotCommand, Message
 BOT_COMMANDS = [
     BotCommand("/start", "Начать работу с ботом"),
     BotCommand("/help", "Показать доступные команды"),
-    BotCommand("/subscribe", "Подписаться на курсы"),
+    BotCommand("/subscribe", "Управлять подписками на курсы"),
+    BotCommand("/summary", "Получить краткое содержание лекции"),
 ]
 
 
