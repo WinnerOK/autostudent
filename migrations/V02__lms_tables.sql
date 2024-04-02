@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS autostudent.lessons (
   id BIGSERIAL PRIMARY KEY,
   course_id BIGINT REFERENCES autostudent.courses (id) ON DELETE CASCADE NOT NULL,
   name TEXT NOT NULL,
+  lesson_number INT,
   lms_url TEXT NOT NULL
 );
 
