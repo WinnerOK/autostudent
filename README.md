@@ -17,7 +17,7 @@ make build-docker
 
 Запустить машинерию для локальной разработки
 ```bash
-docker compose up rmq redis db db-migration taskiq-worker taskiq-sheduler
+docker compose up rmq redis db db-migration taskiq-worker taskiq-sheduler meilisearch
 ```
 
 ## Installation
