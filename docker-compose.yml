@@ -5,6 +5,7 @@ x-application-environment: &app-environment
   PG_DSN: ${PG_DSN}
   RMQ_DSN: ${RMQ_DSN}
   REDIS_DSN: ${REDIS_DSN}
+  MEILI_DSN: ${MEILI_DSN}
 
 services:
   taskiq-worker:
