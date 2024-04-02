@@ -9,10 +9,10 @@ CREATE TABLE IF NOT EXISTS autostudent.lessons (
   name TEXT NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS autostudent.youtube_summarization (
-  youtube_video_url VARCHAR(100) PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS autostudent.videos_summarization (
+  video_url VARCHAR(255) PRIMARY KEY,
   lesson_id BIGSERIAL REFERENCES autostudent.lessons (id) ON DELETE CASCADE NOT NULL,
   summarization TEXT
 );
 
-CREATE INDEX youtube_summarization_lesson_id_index ON autostudent.youtube_summarization(lesson_id);
+CREATE INDEX videos_summarization_lesson_id_index ON autostudent.videos_summarization(lesson_id);
