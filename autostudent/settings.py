@@ -17,5 +17,6 @@ class Settings(BaseSettings):
     redis_dsn: RedisDsn = Field()
     rmq_dsn: str = Field()
     meili_dsn: str = Field()
+    yandex_session_id: str = Field()
 
     training_answer_separator: str = "---"
