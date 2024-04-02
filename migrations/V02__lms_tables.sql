@@ -1,12 +1,14 @@
 CREATE TABLE IF NOT EXISTS autostudent.courses (
   id BIGSERIAL PRIMARY KEY,
-  name TEXT NOT NULL
+  name TEXT NOT NULL,
+  lms_url TEXT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS autostudent.lessons (
   id BIGSERIAL PRIMARY KEY,
   course_id BIGSERIAL REFERENCES autostudent.courses (id) ON DELETE CASCADE NOT NULL,
-  name TEXT NOT NULL
+  name TEXT NOT NULL,
+  lms_url TEXT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS autostudent.videos_summarization (
