@@ -2,6 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 import os
 
+
 base_url = "https://mhs.academy.yandex.ru"
 terms = ["12", "13"]
 
@@ -95,10 +96,16 @@ def get_lessons_with_videos(course_url):
     for lesson in lessons:
         lesson_url = lesson["url"]
 
-        videos = get_youtube_videos(lesson_url)
+        videos = get_youtube_and_yandex_videos(lesson_url)
 
-        courses_and_videos.append(
-            {"title": lesson["title"], "url": lesson_url, "youtube": videos}
-        )
+        if len(videos) > 0:
+            courses_and_videos.append(
+                {
+                    "title": lesson["title"],
+                    "url": lesson_url,
+                    "type": videos[0]["type"],
+                    "url": videos[0]["url"],
+                }
+            )
 
     return courses_and_videos
