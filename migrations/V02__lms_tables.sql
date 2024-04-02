@@ -14,3 +14,5 @@ CREATE TABLE IF NOT EXISTS autostudent.youtube_summarization (
   lesson_id BIGSERIAL REFERENCES autostudent.lessons (id) ON DELETE CASCADE NOT NULL,
   summarization TEXT
 );
+
+CREATE INDEX youtube_summarization_lesson_id_index ON autostudent.youtube_summarization(lesson_id);
