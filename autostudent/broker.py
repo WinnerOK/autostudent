@@ -7,6 +7,7 @@ from taskiq import TaskiqScheduler, Context, TaskiqState, TaskiqEvents, TaskiqDe
 from taskiq_redis import RedisAsyncResultBackend
 from taskiq.serializers import ORJSONSerializer
 from taskiq.schedule_sources import LabelScheduleSource
+from telebot.async_telebot import AsyncTeleBot
 
 from autostudent.settings import Settings
 
@@ -43,14 +44,18 @@ async def shutdown(state: TaskiqState) -> None:
     await state.pool.close()
 
 
-def db_pool_def(context: Annotated[Context, TaskiqDepends()]) -> asyncpg.Pool:
+def db_pool_dep(context: Annotated[Context, TaskiqDepends()]) -> asyncpg.Pool:
     return context.state.pool
 
+def bot_dep() -> AsyncTeleBot:
+    bot = AsyncTeleBot(settings.telegram_token)
+    bot.settings = settings
+    return bot
 
 @broker.task
 async def add_one(
     value: int,
-    db_pool: Annotated[asyncpg.Pool, TaskiqDepends(db_pool_def)],
+    db_pool: Annotated[asyncpg.Pool, TaskiqDepends(db_pool_dep)],
 ) -> int:
     conn: asyncpg.Connection
     async with db_pool.acquire() as conn:
