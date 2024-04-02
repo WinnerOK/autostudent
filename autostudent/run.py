@@ -9,10 +9,9 @@ from telebot.asyncio_filters import AdvancedCustomFilter
 from telebot.callback_data import CallbackDataFilter
 from telebot.types import CallbackQuery
 
+from autostudent.broker import add_one, broker
 from autostudent.settings import Settings
 from autostudent.tg_bot import callbacks, handlers
-from autostudent.broker import broker, add_one
-
 
 
 def register_handlers(bot: AsyncTeleBot, pool: asyncpg.Pool) -> None:
@@ -22,103 +21,43 @@ def register_handlers(bot: AsyncTeleBot, pool: asyncpg.Pool) -> None:
         pass_bot=True,
     )
     bot.register_message_handler(
-        # handlers.training_handler,
-        partial(
-            handlers.training_handler,
-            pool=pool,
-        ),
-        commands=["training"],
-        pass_bot=True,
-    )
-    bot.register_message_handler(
         handlers.help_handler,
         commands=["help"],
         pass_bot=True,
     )
-
     bot.register_message_handler(
-        partial(
-            handlers.definition_handler,
-            pool=pool,
-        ),
-        pass_bot=True,
-    )
-
-    bot.register_message_handler(
-        partial(
-            handlers.file_handler,
-            pool=pool,
-        ),
-        content_types=["document"],
+        handlers.summary_handler,
+        commands=["summary"],
         pass_bot=True,
     )
 
     bot.register_callback_query_handler(
         partial(
-            callbacks.language_level_callback,
+            callbacks.course_data_callback,
             pool=pool,
         ),
         func=None,
-        config=callbacks.language_level_data.filter(),
+        config=callbacks.course_data.filter(),
         pass_bot=True,
     )
 
     bot.register_callback_query_handler(
         partial(
-            callbacks.training_iteration_start_callback,
+            callbacks.lesson_data_callback,
             pool=pool,
         ),
         func=None,
-        config=callbacks.training_iteration_start_data.filter(),
+        config=callbacks.lesson_data.filter(),
         pass_bot=True,
     )
 
     bot.register_callback_query_handler(
         partial(
-            callbacks.training_iteration_end_callback,
+            callbacks.lesson_data_callback,
             pool=pool,
         ),
         func=None,
-        config=callbacks.training_iteration_end_data.filter(),
-        pass_bot=True,
-    )
-
-    bot.register_callback_query_handler(
-        callbacks.exit_training_callback,
-        func=None,
-        config=callbacks.exit_training_data.filter(),
-        pass_bot=True,
-    )
-
-    bot.register_callback_query_handler(
-        partial(
-            callbacks.save_discovered_word_callback,
-            pool=pool,
-        ),
-        func=None,
-        config=callbacks.word_discovery_data.filter(),
-        pass_bot=True,
-    )
-
-    bot.register_callback_query_handler(
-        partial(
-            callbacks.finish_tinder_session,
-            pool=pool,
-        ),
-        func=None,
-        config=callbacks.tinder_session_data.filter(
-            action=callbacks.TinderSessionAction.finish,
-        ),
-        pass_bot=True,
-    )
-
-    bot.register_callback_query_handler(
-        partial(
-            callbacks.process_tinder_session_choice,
-            pool=pool,
-        ),
-        func=None,
-        config=callbacks.tinder_session_data.filter(),
+        config=callbacks.lesson_data.filter(),
         pass_bot=True,
     )
 
@@ -143,7 +82,7 @@ async def main():
     except asyncio.TimeoutError as e:
         msg = "Couldn't connect to database"
         raise RuntimeError(msg) from e
-    
+
     await broker.startup()
 
     task = await add_one.kiq(1)
@@ -154,18 +93,18 @@ async def main():
     else:
         print("Error found while executing task.")
 
+    bot = AsyncTeleBot(settings.telegram_token)
+    bot.settings = settings
+    bot.add_custom_filter(CallbackFilter())
+    register_handlers(bot, pool)
+    await bot.delete_my_commands()
+    await bot.set_my_commands(handlers.BOT_COMMANDS)
 
-    # bot = AsyncTeleBot(settings.telegram_token)
-    # bot.settings = settings
-    # bot.add_custom_filter(CallbackFilter())
-    # register_handlers(bot, pool)
-    # await bot.delete_my_commands()
-    # await bot.set_my_commands(handlers.BOT_COMMANDS)
-
-    # try:
-    #     await bot.polling()
-    # finally:
-    #     await pool.close()
+    try:
+        await bot.polling()
+    finally:
+        pass
+        await pool.close()
     await broker.shutdown()
 
 
