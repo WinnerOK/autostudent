@@ -56,7 +56,7 @@ async def _poll_summarization_task(
             )
 
         response_json = response.json()
-        if "keypoints" in response_json:
+        if "keypoints" in response_json and response_json["status_code"] == 0:
             return json.dumps(response_json["keypoints"])
         elif "error_code" in response_json:
             raise Exception(
