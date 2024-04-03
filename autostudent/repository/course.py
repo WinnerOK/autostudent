@@ -20,7 +20,7 @@ class Course:
         )
 
 
-async def get_courses(conn: asyncpg.Connection, page_num=0, page_size=10) -> list[Course]:
+async def get_courses_page(conn: asyncpg.Connection, page_num=0, page_size=10) -> list[Course]:
     rows = await conn.fetch(
         dedent(
             """
@@ -40,3 +40,39 @@ async def get_courses(conn: asyncpg.Connection, page_num=0, page_size=10) -> lis
         for r in rows
     ]
 
+
+async def get_courses(conn: asyncpg.Connection):
+    return await conn.fetch(
+        """
+        select id, name, lms_url from autostudent.courses;
+        """
+    )
+
+
+async def get_lessons_by_course(conn: asyncpg.Connection, course_id):
+    return await conn.fetch(
+        """
+        select id, name, lesson_number, lms_url from autostudent.lessons
+        where course_id = $1;
+        """,
+        course_id,
+    )
+
+
+async def insert_course(conn: asyncpg.Connection, name, lms_url):
+    return await conn.execute(
+        """
+        insert into autostudent.courses (name, lms_url) values ($1, $2)
+        returning id;
+        """,
+        name,
+        lms_url,
+    )
+
+
+async def check_exsisting_course(conn: asyncpg.Connection, title, url):
+    return await conn.fetch(
+        "select id from autostudent.courses where name = $1 and lms_url = $2;",
+        title,
+        url,
+    )

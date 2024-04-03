@@ -17,6 +17,7 @@ class Settings(BaseSettings):
     redis_dsn: RedisDsn = Field()
     rmq_dsn: str = Field()
     meili_dsn: str = Field()
+    yandex_session_id: str = Field()
 
     course_page_size: int = 10
     subscription_icons: dict[bool, str] = {

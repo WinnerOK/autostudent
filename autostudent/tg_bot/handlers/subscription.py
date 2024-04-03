@@ -2,7 +2,7 @@ import asyncpg
 from telebot.async_telebot import AsyncTeleBot
 from telebot.types import Message
 
-from autostudent.repository.course import get_courses
+from autostudent.repository.course import get_courses_page
 from autostudent.repository.subscription import get_chat_subscriptions
 from autostudent.tg_bot.markups import subscription_markup
 
@@ -13,7 +13,7 @@ async def subscription_handler(
     pool: asyncpg.Pool,
 ):
     async with pool.acquire() as conn:  # type: asyncpg.Connection
-        courses = await get_courses(conn, page_size=bot.settings.course_page_size)
+        courses = await get_courses_page(conn, page_size=bot.settings.course_page_size)
         current_subscriptions = await get_chat_subscriptions(conn, message.chat.id)
 
     await bot.reply_to(

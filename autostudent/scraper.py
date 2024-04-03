@@ -1,21 +1,21 @@
 import requests
 from bs4 import BeautifulSoup
 import os
+from autostudent.settings import Settings
 
-
+settings = Settings()
 base_url = "https://mhs.academy.yandex.ru"
 terms = ["12", "13"]
 
 
 def get_page(url, params=None) -> requests.Response:
-    session_id = os.getenv("YANDEX_SESSION_ID")
     session = requests.Session()
     session.headers.update(
         {
             "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 YaBrowser/24.1.0.0 Safari/537.36"
         }
     )
-    session.cookies.update({"Session_id": session_id})
+    session.cookies.update({"Session_id": settings.yandex_session_id})
     return session.get(url=url, params=params)
 
 

@@ -6,6 +6,7 @@ x-application-environment: &app-environment
   RMQ_DSN: ${RMQ_DSN}
   REDIS_DSN: ${REDIS_DSN}
   MEILI_DSN: ${MEILI_DSN}
+  YANDEX_SESSION_ID: ${YANDEX_SESSION_ID}
 
 services:
   taskiq-worker:

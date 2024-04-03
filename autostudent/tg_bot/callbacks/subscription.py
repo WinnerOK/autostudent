@@ -2,7 +2,7 @@ import asyncpg
 from telebot.async_telebot import AsyncTeleBot
 from telebot.types import CallbackQuery
 
-from autostudent.repository.course import get_courses
+from autostudent.repository.course import get_courses_page
 from autostudent.repository.subscription import subscribe_chat, unsubscribe_chat, get_chat_subscriptions
 from autostudent.tg_bot.callbacks.types import (
     SubscriptionStatus,
@@ -66,7 +66,7 @@ async def subscription_change_page_callback(
     page_num = int(callback_data['page_num'])
 
     async with pool.acquire() as conn:  # type: asyncpg.Connection
-        courses = await get_courses(conn, page_num=page_num, page_size=bot.settings.course_page_size)
+        courses = await get_courses_page(conn, page_num=page_num, page_size=bot.settings.course_page_size)
         current_subscriptions = await get_chat_subscriptions(conn, call.message.chat.id)
 
     reply_markup = call.message.reply_markup
