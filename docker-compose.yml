@@ -12,7 +12,7 @@ x-application-environment: &app-environment
 services:
   taskiq-worker:
     image: autostudent:latest
-    command: ["taskiq", "worker", "autostudent.broker:broker"] # по дефолту импортирует к брокеру все tasks.py
+    command: ["taskiq", "worker", "autostudent.broker:broker", "autostudent.tasks"] # по дефолту импортирует к брокеру все tasks.py
     environment: *app-environment
     depends_on: &taskiq-deps
       db-migration:
@@ -26,7 +26,7 @@ services:
 
   taskiq-sheduler:
     image: autostudent:latest
-    command: ["taskiq", "scheduler", "autostudent.broker:scheduler"] # по дефолту импортирует к шедулеру все tasks.py
+    command: ["taskiq", "scheduler", "autostudent.broker:scheduler", "autostudent.tasks"] # по дефолту импортирует к шедулеру все tasks.py
     environment: *app-environment
     depends_on: &taskiq-deps
       db-migration:

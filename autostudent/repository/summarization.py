@@ -50,3 +50,11 @@ async def insert_summarization_for_video(
         lesson_id,
         summarization
     )
+
+async def get_summary(conn: asyncpg.Connection, lesson_id):
+    return await conn.fetch(
+        """
+        select summarization from autostudent.videos_summarization where lesson_id = $1;
+        """,
+        int(lesson_id),
+    )

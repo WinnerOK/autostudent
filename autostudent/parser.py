@@ -1,7 +1,7 @@
 import autostudent as scraper
 import autostudent.repository.course as course_repo
 import autostudent.repository.lesson as lesson_repo
-import summarize
+import autostudent.summarize as summarize
 import asyncpg
 import meilisearch
 
@@ -38,4 +38,3 @@ async def process_courses_and_lessons(conn: asyncpg.Connection, meilisearch_clie
                         )
                         #TODO: вызов jobы которая делает рассылку
                         await summarize.add_summary_to_meilisearch(summary, lesson_id, meilisearch_client)
-

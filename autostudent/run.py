@@ -21,6 +21,8 @@ from autostudent.tg_bot.callbacks.types import (
     subscription_change_page,
 )
 
+from autostudent.tasks import send_notifications
+from autostudent.repository.subscription import get_course_subscribers
 
 
 def register_handlers(bot: AsyncTeleBot, pool: asyncpg.Pool) -> None:
@@ -76,7 +78,10 @@ def register_handlers(bot: AsyncTeleBot, pool: asyncpg.Pool) -> None:
     )
 
     bot.register_message_handler(
-        handlers.summary_handler,
+        partial(
+            handlers.summary_handler,
+            pool=pool,
+        ),
         commands=["summary"],
         pass_bot=True,
     )
@@ -110,6 +115,8 @@ def register_handlers(bot: AsyncTeleBot, pool: asyncpg.Pool) -> None:
         config=callbacks.lesson_data.filter(),
         pass_bot=True,
     )
+
+
 class CallbackFilter(AdvancedCustomFilter):
     key = "config"
 
@@ -134,7 +141,7 @@ async def main():
     await broker.startup()
 
     # Пример как стартануть таску. Результат таски можно не дожидаться. Она все-равно выполнится
-    # task = await add_one.kiq(1)
+    # task = await send_notifications.kiq(course_id=1)
     # result = await task.wait_result()
     # print(f"Task execution took: {result.execution_time} seconds.")
     # if not result.is_err:
@@ -148,6 +155,14 @@ async def main():
     register_handlers(bot, pool)
     await bot.delete_my_commands()
     await bot.set_my_commands(handlers.BOT_COMMANDS)
+
+    # async with pool.acquire() as conn:
+    #     subs = await get_course_subscribers(conn, 1)
+    #     for sub in subs:
+    #         await bot.send_message(
+    #             sub,
+    #             f""" Нотификация """,
+    #         )
 
     print("Bot is started")
     try:
