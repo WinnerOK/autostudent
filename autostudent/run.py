@@ -22,7 +22,6 @@ from autostudent.tg_bot.callbacks.types import (
 )
 
 
-
 def register_handlers(bot: AsyncTeleBot, pool: asyncpg.Pool) -> None:
     bot.register_message_handler(
         partial(
@@ -76,7 +75,10 @@ def register_handlers(bot: AsyncTeleBot, pool: asyncpg.Pool) -> None:
     )
 
     bot.register_message_handler(
-        handlers.summary_handler,
+        partial(
+            handlers.summary_handler,
+            pool=pool,
+        ),
         commands=["summary"],
         pass_bot=True,
     )
@@ -110,6 +112,8 @@ def register_handlers(bot: AsyncTeleBot, pool: asyncpg.Pool) -> None:
         config=callbacks.lesson_data.filter(),
         pass_bot=True,
     )
+
+
 class CallbackFilter(AdvancedCustomFilter):
     key = "config"
 

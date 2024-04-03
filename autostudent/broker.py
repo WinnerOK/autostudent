@@ -24,6 +24,7 @@ scheduler = TaskiqScheduler(
     sources=[LabelScheduleSource(broker)],
 )
 
+
 @broker.on_event(TaskiqEvents.WORKER_STARTUP)
 async def startup(state: TaskiqState) -> None:
     # Here we store connection pool on startup for later use.
@@ -37,7 +38,8 @@ async def startup(state: TaskiqState) -> None:
     except asyncio.TimeoutError as e:
         msg = "Couldn't connect to database"
         raise RuntimeError(msg) from e
-    
+
+
 @broker.on_event(TaskiqEvents.WORKER_SHUTDOWN)
 async def shutdown(state: TaskiqState) -> None:
     # Here we close our pool on shutdown event.
@@ -47,10 +49,12 @@ async def shutdown(state: TaskiqState) -> None:
 def db_pool_dep(context: Annotated[Context, TaskiqDepends()]) -> asyncpg.Pool:
     return context.state.pool
 
+
 def bot_dep() -> AsyncTeleBot:
     bot = AsyncTeleBot(settings.telegram_token)
     bot.settings = settings
     return bot
+
 
 @broker.task
 async def add_one(
