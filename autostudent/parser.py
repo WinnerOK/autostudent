@@ -3,9 +3,10 @@ import autostudent.repository.course as course_repo
 import autostudent.repository.lesson as lesson_repo
 import summarize
 import asyncpg
+import meilisearch
 
 
-async def process_courses_and_lessons(conn: asyncpg.Connection):
+async def process_courses_and_lessons(conn: asyncpg.Connection, meilisearch_client: meilisearch.Client):
     for semester in reversed(scraper.terms):  # Проходимся по семестрам с конца
         courses = scraper.get_courses(semester)
         for course in courses:
@@ -35,6 +36,6 @@ async def process_courses_and_lessons(conn: asyncpg.Connection):
                             lesson_id=lesson_id,
                             conn=conn,
                         )
-                        #TODO: вызов jobы которая делает рассылку 
-                        #TODO: Сохранение в бд для поиска по тексту
+                        #TODO: вызов jobы которая делает рассылку
+                        await summarize.add_summary_to_meilisearch(summary, lesson_id, meilisearch_client)
 

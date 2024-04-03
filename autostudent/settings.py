@@ -27,3 +27,6 @@ class Settings(BaseSettings):
 
     generate_summarization_endpoint: str = Field()
     generate_summarization_timeout_seconds: int = 90
+
+    add_to_meilisearch_timeout_seconds: int = 2
+    add_to_meilisearch_poll_interval_ms: int = 1000

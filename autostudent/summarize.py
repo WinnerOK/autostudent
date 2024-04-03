@@ -4,6 +4,8 @@ import httpx
 import json
 import time
 
+import meilisearch
+
 from autostudent.settings import Settings
 from autostudent.repository.summarization import (
     try_find_summarization_for_video,
@@ -15,6 +17,8 @@ REQUEST_HEADERS = {
     "Content-Type": "application/json",
     "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 YaBrowser/24.1.0.0 Safari/537.36",
 }
+
+MEILISEARCH_INDEX_NAME = "keypoints"
 
 
 def _is_youtube_url(video_url: str) -> bool:
@@ -153,3 +157,57 @@ async def get_summarization(
     )
 
     return summarization
+
+
+async def _wait_for_meilisearch_task(
+    task_id: int, 
+    client: meilisearch.Client, 
+    poll_interval_ms: int,
+    timeout_seconds: int,
+):
+    deadline = int(time.time()) + timeout_seconds
+    while int(time.time()) < deadline:
+        task_result = client.get_task(task_id)
+        if task_result.status in ['enqueued', 'processing']:
+            await asyncio.sleep(poll_interval_ms / 1000)
+        elif task_result.status in ['succeeded', 'canceled']:
+            return
+        else:
+            raise Exception('Failed to add documents to search index')
+    raise TimeoutError('Operation timeouted')
+
+
+
+async def add_summary_to_meilisearch(
+    summary: str, 
+    lesson_id: int,
+    client: meilisearch.Client,
+    retries = 3,
+):
+    keypoints = json.loads(summary)
+    documents = []
+    for keypoint in keypoints:
+        documents.append({
+            "start_time": keypoint["start_time"],
+            "lesson_id": lesson_id,
+            "id": f'{lesson_id}_{keypoint["id"]}',
+            "theses": [thesis["content"] for thesis in keypoint["theses"]],
+        })
+    index = client.index(MEILISEARCH_INDEX_NAME)
+    task_id = index.add_documents(documents, primary_key='id').task_uid
+
+    retry_num = 0
+    settings = Settings()
+    base_delay = settings.add_to_meilisearch_timeout_seconds
+    base_poll_interval_ms = settings.add_to_meilisearch_poll_interval_ms
+    while retry_num < retries:
+        try:
+            timeout = base_delay * 2 ** retry_num
+            poll_interval_ms = base_poll_interval_ms * 2 ** retry_num
+            await _wait_for_meilisearch_task(task_id, client, poll_interval_ms, timeout)
+            return
+        except TimeoutError:
+            retry_num += 1
+        except Exception as e:
+            raise e
+    raise Exception('Failed to add documents to search index due to timeout')
