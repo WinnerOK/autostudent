@@ -31,4 +31,3 @@ async def send_notifications(
                 sub,
                 f""" Нотификация о {course_id}""",
             )
-    await bot.polling()
