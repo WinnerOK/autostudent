@@ -1,6 +1,6 @@
 from textwrap import dedent
 import asyncpg
-from autostudent.repository.sql_operations import get_courses
+from autostudent.repository.course import get_courses
 
 from telebot.async_telebot import AsyncTeleBot
 from telebot.types import Message

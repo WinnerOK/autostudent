@@ -10,7 +10,6 @@ from taskiq.schedule_sources import LabelScheduleSource
 from telebot.async_telebot import AsyncTeleBot
 
 from autostudent.settings import Settings
-from autostudent.repository.sql_operations import get_subscriptions
 
 settings = Settings()
 broker = (
@@ -66,19 +65,3 @@ async def add_one(
     async with db_pool.acquire() as conn:
         a = await conn.fetchrow("select 55;")
         return value + a[0] + 1
-
-
-@broker.task
-async def send_messages(
-    course_id: int,
-    db_pool: Annotated[asyncpg.Pool, TaskiqDepends(db_pool_dep)],
-    bot: Annotated[AsyncTeleBot, TaskiqDepends(bot_dep)],
-) -> int:
-    conn: asyncpg.Connection
-    async with db_pool.acquire() as conn:
-        subs = await get_subscriptions(conn, course_id)
-        for sub in subs:
-            await bot.send_message(
-                sub["chat_id"],
-                f""" Нотификация """,
-            ),
