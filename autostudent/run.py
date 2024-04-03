@@ -127,7 +127,7 @@ async def main():
     try:
         pool: asyncpg.Pool = await asyncio.wait_for(
             asyncpg.create_pool(
-                dsn=str("postgres://postgres:postgres@localhost:5432/postgres"),
+                dsn=str(settings.pg_dsn),
             ),
             timeout=5.0,
         )
