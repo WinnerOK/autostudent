@@ -6,7 +6,7 @@ from telebot.types import CallbackQuery
 
 from autostudent.tg_bot.callbacks.types import course_data
 from autostudent.tg_bot.markups import lesson_markup
-from autostudent.repository.sql_operations import get_courses
+from autostudent.repository.course import get_courses
 
 
 async def course_data_callback(

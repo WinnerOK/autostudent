@@ -3,7 +3,7 @@ import asyncpg
 from telebot.async_telebot import AsyncTeleBot
 from telebot.types import CallbackQuery
 
-from autostudent.repository.sql_operations import get_courses
+from autostudent.repository.course import get_courses
 from autostudent.tg_bot.callbacks.types import lesson_data
 
 
