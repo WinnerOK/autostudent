@@ -35,5 +35,6 @@ async def process_courses_and_lessons(conn: asyncpg.Connection):
                             lesson_id=lesson_id,
                             conn=conn,
                         )
-                        #TODO вызов jobы которая делает рассылку 
-                        
+                        #TODO: вызов jobы которая делает рассылку 
+                        #TODO: Сохранение в бд для поиска по тексту
+
