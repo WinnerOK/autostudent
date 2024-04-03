@@ -1,7 +1,7 @@
 import autostudent as scraper
 import autostudent.repository.course as course_repo
 import autostudent.repository.lesson as lesson_repo
-import summarize
+import autostudent.summarize as summarize
 import asyncpg
 
 
@@ -35,6 +35,5 @@ async def process_courses_and_lessons(conn: asyncpg.Connection):
                             lesson_id=lesson_id,
                             conn=conn,
                         )
-                        #TODO: вызов jobы которая делает рассылку 
-                        #TODO: Сохранение в бд для поиска по тексту
-
+                        # TODO: вызов jobы которая делает рассылку
+                        # TODO: Сохранение в бд для поиска по тексту
