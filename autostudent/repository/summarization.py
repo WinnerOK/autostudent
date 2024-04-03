@@ -43,7 +43,7 @@ async def insert_summarization_for_video(
                 $1,
                 $2,
                 $3
-            );
+            ) on conflict do nothing ;
             """,
         ),
         video_url,
