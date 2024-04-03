@@ -51,11 +51,15 @@ async def _poll_summarization_task(
         try:
             response.raise_for_status()
         except httpx.HTTPStatusError as exc:
-            raise Exception(
-                error_message_template.format(
-                    reason=f"error response {exc.response.status_code} while requesting {exc.request.url!r}.",
+            if exc.response.status_code == 429:
+                await asyncio.sleep(int(exc.response.headers.get('retry-after', 10)))
+                continue
+            else:
+                raise Exception(
+                    error_message_template.format(
+                        reason=f"error response {exc.response.status_code} while requesting {exc.request.url!r}.",
+                    )
                 )
-            )
 
         response_json = response.json()
         if "keypoints" in response_json and response_json["status_code"] == 0:
