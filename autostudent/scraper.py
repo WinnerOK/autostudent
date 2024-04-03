@@ -104,7 +104,7 @@ def get_lessons_with_videos(course_url):
                     "title": lesson["title"],
                     "url": lesson_url,
                     "type": videos[0]["type"],
-                    "url": videos[0]["url"],
+                    "video_url": videos[0]["url"],
                 }
             )
 
