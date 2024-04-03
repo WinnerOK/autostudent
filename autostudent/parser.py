@@ -21,7 +21,7 @@ async def process_courses_and_lessons(db_pool: asyncpg.Pool):
         for course in courses:
             conn: asyncpg.Connection
             async with db_pool.acquire() as conn:
-                with conn.transaction():
+                async with conn.transaction():
                     try:
                         existing_course = await course_repo.check_exsisting_course(
                             conn, course["title"], course["url"]
