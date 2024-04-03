@@ -33,7 +33,7 @@ async def _poll_summarization_task(
 
     deadline = int(time.time()) + settings.generate_summarization_timeout_seconds
 
-    await asyncio.sleep(poll_interval_ms / 1000)
+    await asyncio.sleep(poll_interval_ms * settings.summary_polling_time_multiplier / 1000)
 
     poll_summarization_task_request_body = {
         "session_id": session_id,
@@ -52,7 +52,8 @@ async def _poll_summarization_task(
             response.raise_for_status()
         except httpx.HTTPStatusError as exc:
             if exc.response.status_code == 429:
-                await asyncio.sleep(int(exc.response.headers.get('retry-after', 10)))
+                sleep_for_seconds = settings.summary_polling_time_multiplier * int(exc.response.headers.get('retry-after', 10))
+                await asyncio.sleep(sleep_for_seconds)
                 continue
             else:
                 raise Exception(
@@ -72,7 +73,7 @@ async def _poll_summarization_task(
             )
 
         poll_interval_ms = int(response_json.get("poll_interval_ms", 1000))
-        await asyncio.sleep(poll_interval_ms / 1000)
+        await asyncio.sleep(poll_interval_ms * settings.summary_polling_time_multiplier / 1000)
 
     raise Exception(
         error_message_template.format(
@@ -109,20 +110,28 @@ async def get_summarization(
     }
 
     async with httpx.AsyncClient(http2=True) as http_client:
-        response = await http_client.post(
-            url=settings.generate_summarization_endpoint,
-            json=create_summarization_task_request_body,
-            headers=REQUEST_HEADERS,
-        )
+        response = None
 
-        try:
-            response.raise_for_status()
-        except httpx.HTTPStatusError as exc:
-            raise Exception(
-                error_message_template.format(
-                    reason=f"error response {exc.response.status_code} while requesting {exc.request.url!r}.",
-                )
+        while True:
+            response = await http_client.post(
+                url=settings.generate_summarization_endpoint,
+                json=create_summarization_task_request_body,
+                headers=REQUEST_HEADERS,
             )
+
+            try:
+                response.raise_for_status()
+                break
+            except httpx.HTTPStatusError as exc:
+                if exc.response.status_code == 429:
+                    sleep_for_seconds = settings.summary_polling_time_multiplier * int(exc.response.headers.get('retry-after', 10))
+                    await asyncio.sleep(sleep_for_seconds)
+                else:
+                    raise Exception(
+                        error_message_template.format(
+                            reason=f"error response {exc.response.status_code} while requesting {exc.request.url!r}.",
+                        )
+                    )
 
         response_json = response.json()
 
