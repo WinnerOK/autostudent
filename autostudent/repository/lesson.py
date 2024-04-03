@@ -35,10 +35,16 @@ async def insert_lesson(
     )
 
 
-async def get_lessons(conn: asyncpg.Connection, course_id):
+async def get_summarized_lessons(conn: asyncpg.Connection, course_id):
     return await conn.fetch(
         """
-        select id, name from autostudent.lessons where course_id = $1;
+        SELECT lessons.id, lessons.name
+        FROM autostudent.lessons AS lessons
+        JOIN autostudent.videos_summarization AS videos_summarization
+            ON lessons.id = videos_summarization.lesson_id
+        WHERE
+            lessons.course_id = $1 AND
+            videos_summarization.summarization IS NOT NULL;
         """,
         int(course_id),
     )
