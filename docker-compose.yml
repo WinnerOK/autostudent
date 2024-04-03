@@ -7,6 +7,7 @@ x-application-environment: &app-environment
   REDIS_DSN: ${REDIS_DSN}
   MEILI_DSN: ${MEILI_DSN}
   YANDEX_SESSION_ID: ${YANDEX_SESSION_ID}
+  GENERATE_SUMMARIZATION_ENDPOINT: ${GENERATE_SUMMARIZATION_ENDPOINT}
 
 services:
   taskiq-worker:

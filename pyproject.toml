@@ -28,6 +28,7 @@ meilisearch = "^0.31.0"
 taskiq-dependencies = "^1.5.3"
 beautifulsoup4 = "4.12.3"
 requests = "2.31.0"
+httpx = "^0.27.0"
 
 [tool.poetry.group.dev.dependencies]  # https://python-poetry.org/docs/master/managing-dependencies/
 black = "^23.9.1"

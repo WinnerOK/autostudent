@@ -24,3 +24,6 @@ class Settings(BaseSettings):
         True: '✅',
         False: '❌',
     }
+
+    generate_summarization_endpoint: str = Field()
+    generate_summarization_timeout_seconds: int = 90
