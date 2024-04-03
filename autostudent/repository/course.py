@@ -60,7 +60,7 @@ async def get_lessons_by_course(conn: asyncpg.Connection, course_id):
 
 
 async def insert_course(conn: asyncpg.Connection, name, lms_url):
-    return await conn.execute(
+    res = await conn.fetchrow(
         """
         insert into autostudent.courses (name, lms_url) values ($1, $2)
         returning id;
@@ -68,6 +68,8 @@ async def insert_course(conn: asyncpg.Connection, name, lms_url):
         name,
         lms_url,
     )
+
+    return res[0]
 
 
 async def check_exsisting_course(conn: asyncpg.Connection, title, url):

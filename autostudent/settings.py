@@ -27,3 +27,5 @@ class Settings(BaseSettings):
 
     generate_summarization_endpoint: str = Field()
     generate_summarization_timeout_seconds: int = 90
+
+    admin_list: set[int] = {182092910, 862606153, 371003779, 378427214, 58301043}

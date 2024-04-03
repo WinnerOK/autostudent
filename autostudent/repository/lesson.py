@@ -22,7 +22,7 @@ async def check_exsisting_lesson(conn: asyncpg.Connection, title, course_id):
 async def insert_lesson(
     conn: asyncpg.Connection, course_id, name, lesson_number, lms_url
 ):
-    return await conn.execute(
+    res = await conn.fetchrow(
         """
         INSERT INTO autostudent.lessons (course_id, name, lesson_number, lms_url)
         VALUES ($1, $2, $3, $4)
@@ -33,6 +33,7 @@ async def insert_lesson(
         lesson_number,
         lms_url,
     )
+    return res[0]
 
 
 async def get_summarized_lessons(conn: asyncpg.Connection, course_id):

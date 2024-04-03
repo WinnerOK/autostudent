@@ -1,4 +1,6 @@
 import asyncio
+import logging
+
 import asyncpg
 import httpx
 import json
@@ -57,7 +59,7 @@ async def _poll_summarization_task(
 
         response_json = response.json()
         if "keypoints" in response_json and response_json["status_code"] == 0:
-            return json.dumps(response_json["keypoints"])
+            return json.dumps(response_json["keypoints"], ensure_ascii=False)
         elif "error_code" in response_json:
             raise Exception(
                 error_message_template.format(
@@ -134,7 +136,7 @@ async def get_summarization(
                 )
             )
         elif "keypoints" in response_json:
-            summarization = json.dumps(response_json["keypoints"])
+            summarization = json.dumps(response_json["keypoints"], ensure_ascii=False)
         else:
             raise Exception(
                 error_message_template.format(
