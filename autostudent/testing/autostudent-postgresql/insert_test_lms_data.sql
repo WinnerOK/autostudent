@@ -4,11 +4,11 @@ INSERT INTO autostudent.courses(
   lms_url
 ) VALUES (
   1,
-  'course1',
+  'Algorithms and data structures. Semester 2',
   'https://mhs.academy.yandex.ru/student/semesters/13/courses/45/groups/53'
 ), (
   2,
-  'course2',
+  'Parallel and high-performance computing',
   'https://mhs.academy.yandex.ru/student/semesters/13/courses/48/groups/56'
 );
 
@@ -21,17 +21,17 @@ INSERT INTO autostudent.lessons(
 ) VALUES (
   1,
   1,
-  'lesson1',
+  'Lesson 1',
   'https://mhs.academy.yandex.ru/student/semesters/13/courses/45/groups/53/lessons/195'
 ), (
   2,
   1,
-  'lesson2',
+  'Lesson 2',
   'https://mhs.academy.yandex.ru/student/semesters/13/courses/45/groups/53/lessons/196'
 ), (
   3,
   2,
-  'lesson1',
+  'Lesson 1',
   'https://mhs.academy.yandex.ru/student/semesters/13/courses/48/groups/56/lessons/225'
 );
 
