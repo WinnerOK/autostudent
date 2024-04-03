@@ -146,10 +146,10 @@ async def main():
 
     await broker.startup()
 
-    import autostudent.parser as parser
-    async with pool.acquire() as conn:
-        async with conn.transaction():
-            await parser.process_courses_and_lessons(conn)
+    # import autostudent.parser as parser
+    # async with pool.acquire() as conn:
+    #     async with conn.transaction():
+    #         await parser.process_courses_and_lessons(conn)
 
     # Пример как стартануть таску. Результат таски можно не дожидаться. Она все-равно выполнится
     # task = await send_notifications.kiq(course_id=1)
