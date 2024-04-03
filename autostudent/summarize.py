@@ -211,3 +211,21 @@ async def add_summary_to_meilisearch(
         except Exception as e:
             raise e
     raise Exception('Failed to add documents to search index due to timeout')
+
+async def search_for_summary_keypoint(
+    query: str,
+    client: meilisearch.Client,
+    top_k = 3,
+    retries = 3,
+):
+    index = client.index(MEILISEARCH_INDEX_NAME)
+
+    retry_num = 0
+    while retry_num < retries:
+        try:
+            response = index.search(query, {'limit': top_k, 'attributesToSearchOn': ['theses']})
+            break
+        except Exception:
+            retry_num += 1
+
+    return response['hits']
