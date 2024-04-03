@@ -10,6 +10,7 @@ from taskiq.schedule_sources import LabelScheduleSource
 from telebot.async_telebot import AsyncTeleBot
 
 from autostudent.settings import Settings
+from autostudent.repository.sql_operations import get_subscriptions
 
 settings = Settings()
 broker = (
@@ -24,6 +25,7 @@ scheduler = TaskiqScheduler(
     sources=[LabelScheduleSource(broker)],
 )
 
+
 @broker.on_event(TaskiqEvents.WORKER_STARTUP)
 async def startup(state: TaskiqState) -> None:
     # Here we store connection pool on startup for later use.
@@ -37,7 +39,8 @@ async def startup(state: TaskiqState) -> None:
     except asyncio.TimeoutError as e:
         msg = "Couldn't connect to database"
         raise RuntimeError(msg) from e
-    
+
+
 @broker.on_event(TaskiqEvents.WORKER_SHUTDOWN)
 async def shutdown(state: TaskiqState) -> None:
     # Here we close our pool on shutdown event.
@@ -47,10 +50,12 @@ async def shutdown(state: TaskiqState) -> None:
 def db_pool_dep(context: Annotated[Context, TaskiqDepends()]) -> asyncpg.Pool:
     return context.state.pool
 
+
 def bot_dep() -> AsyncTeleBot:
     bot = AsyncTeleBot(settings.telegram_token)
     bot.settings = settings
     return bot
+
 
 @broker.task
 async def add_one(
@@ -61,3 +66,19 @@ async def add_one(
     async with db_pool.acquire() as conn:
         a = await conn.fetchrow("select 55;")
         return value + a[0] + 1
+
+
+@broker.task
+async def send_messages(
+    course_id: int,
+    db_pool: Annotated[asyncpg.Pool, TaskiqDepends(db_pool_dep)],
+    bot: Annotated[AsyncTeleBot, TaskiqDepends(bot_dep)],
+) -> int:
+    conn: asyncpg.Connection
+    async with db_pool.acquire() as conn:
+        subs = await get_subscriptions(conn, course_id)
+        for sub in subs:
+            await bot.send_message(
+                sub["chat_id"],
+                f""" Нотификация """,
+            ),

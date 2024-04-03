@@ -16,7 +16,7 @@ def subscription_markup(
     courses: list[Course],
     current_subscriptions: list[int],
     current_page: int,
-    has_more: bool = True
+    has_more: bool = True,
 ) -> InlineKeyboardMarkup:
     current_subscriptions = set(current_subscriptions)
 
@@ -29,37 +29,38 @@ def subscription_markup(
                 callback_data=subscription_alter_status.new(
                     target_status=SubscriptionStatus.from_bool(not is_subscribed),
                     course_id=course.id,
-                )
+                ),
             ),
             row_width=1,
         )
     keyboard.add(
         InlineKeyboardButton(
-            text='⬅️' if current_page > 0 else '',
-            callback_data=subscription_change_page.new(page_num=current_page - 1) if current_page > 0 else "dummy"
+            text="⬅️" if current_page > 0 else "",
+            callback_data=subscription_change_page.new(page_num=current_page - 1)
+            if current_page > 0
+            else "dummy",
         ),
         InlineKeyboardButton(
-            text='➡️' if has_more else '',
-            callback_data=subscription_change_page.new(page_num=current_page + 1) if has_more else "dummy"
+            text="➡️" if has_more else "",
+            callback_data=subscription_change_page.new(page_num=current_page + 1)
+            if has_more
+            else "dummy",
         ),
         row_width=2,
     )
     keyboard.add(
-        InlineKeyboardButton(
-            text='Завершить',
-            callback_data=subscription_done.new()
-        )
+        InlineKeyboardButton(text="Завершить", callback_data=subscription_done.new())
     )
     return keyboard
 
-def course_markup() -> InlineKeyboardMarkup:
-    courses = ("C++", "Algorithms")
+
+def course_markup(courses) -> InlineKeyboardMarkup:
     keyboard = InlineKeyboardMarkup()
     keyboard.add(
         *[
             InlineKeyboardButton(
-                text=course,
-                callback_data=course_data.new(course=course.lower()),
+                text=course["name"],
+                callback_data=course_data.new(course=course["id"]),
             )
             for course in courses
         ],
@@ -73,8 +74,8 @@ def lesson_markup(lessons) -> InlineKeyboardMarkup:
     keyboard.add(
         *[
             InlineKeyboardButton(
-                text=lesson,
-                callback_data=lesson_data.new(lesson=lesson.lower()),
+                text=lesson["name"],
+                callback_data=lesson_data.new(lesson=lesson["id"]),
             )
             for lesson in lessons
         ],

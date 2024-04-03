@@ -1,4 +1,6 @@
 from textwrap import dedent
+import asyncpg
+from autostudent.repository.sql_operations import get_courses
 
 from telebot.async_telebot import AsyncTeleBot
 from telebot.types import Message
@@ -6,7 +8,14 @@ from telebot.types import Message
 from autostudent.tg_bot.markups import course_markup
 
 
-async def summary_handler(message: Message, bot: AsyncTeleBot):
+async def summary_handler(
+    message: Message,
+    bot: AsyncTeleBot,
+    pool: asyncpg.Pool,
+):
+    async with pool.acquire() as conn:  # type: asyncpg.Connection
+        courses = await get_courses(conn)
+
     await bot.send_message(
         message.chat.id,
         dedent(
@@ -14,5 +23,5 @@ async def summary_handler(message: Message, bot: AsyncTeleBot):
             Выберите курс:
             """,
         ),
-        reply_markup=course_markup(),
+        reply_markup=course_markup(courses),
     )
