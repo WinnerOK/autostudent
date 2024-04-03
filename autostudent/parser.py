@@ -1,7 +1,7 @@
 import autostudent as scraper
 import autostudent.repository.course as course_repo
 import autostudent.repository.lesson as lesson_repo
-
+import summarize
 import asyncpg
 
 
@@ -30,5 +30,10 @@ async def process_courses_and_lessons(conn: asyncpg.Connection):
                         conn, course_id, lesson["title"], None, lesson["url"]
                     )
                     if lesson["type"] == "YouTube":
-                        # TODO SUMMARY
-                        pass
+                        summary = await summarize.get_summarization(
+                            video_url=lesson["video_url"],
+                            lesson_id=lesson_id,
+                            conn=conn,
+                        )
+                        #TODO вызов jobы которая делает рассылку 
+                        
