@@ -14,13 +14,10 @@ from autostudent.repository.subscription import get_course_subscribers
 async def process_courses_lessons_job(
     db_pool: Annotated[asyncpg.Pool, TaskiqDepends(db_pool_dep)],
 ):
-    conn: asyncpg.Connection
-    async with db_pool.acquire() as conn:
-        async with conn.transaction():
-            try:
-                await parser.process_courses_and_lessons(conn)
-            except Exception as e:
-                logging.exception("Scrapping faced error:")
+    try:
+        await parser.process_courses_and_lessons(db_pool)
+    except Exception as e:
+        logging.exception("Scrapping faced error")
 
 
 @broker.task

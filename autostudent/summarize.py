@@ -166,5 +166,5 @@ async def get_summarization(
         lesson_id=lesson_id,
         summarization=summarization,
     )
-
+    logging.info(f"Stored summary for lesson {lesson_id}: {video_url}")
     return summarization
