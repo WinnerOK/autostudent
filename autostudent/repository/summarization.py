@@ -11,10 +11,10 @@ async def try_find_summarization_for_video(
     row = await conn.fetchrow(
         dedent(
             """
-            SELECT
+            select
                 summarization
-            FROM autostudent.videos_summarization
-            WHERE video_url = $1;
+            from autostudent.videos_summarization
+            where video_url = $1;
             """,
         ),
         video_url,
@@ -35,11 +35,11 @@ async def insert_summarization_for_video(
     await conn.fetch(
         dedent(
             """
-            INSERT INTO autostudent.videos_summarization(
+            insert into autostudent.videos_summarization(
                 video_url,
                 lesson_id,
                 summarization
-            ) VALUES (
+            ) values (
                 $1,
                 $2,
                 $3
@@ -51,10 +51,20 @@ async def insert_summarization_for_video(
         summarization
     )
 
+
 async def get_summary(conn: asyncpg.Connection, lesson_id):
     return await conn.fetchrow(
         """
-        select video_url, summarization from autostudent.videos_summarization where lesson_id = $1;
+        select video_url, summarization from autostudent.videos_summarization where lesson_id = any($1::bigint[]);
         """,
         int(lesson_id),
+    )
+
+
+async def get_summaries(conn: asyncpg.Connection, lesson_ids):
+    return await conn.fetch(
+        """
+        select lesson_id, video_url, summarization from autostudent.videos_summarization where lesson_id = any($1::bigint[]);
+        """,
+        list(map(int, lesson_ids)),
     )
