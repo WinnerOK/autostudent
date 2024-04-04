@@ -44,7 +44,9 @@ async def get_courses_page(conn: asyncpg.Connection, page_num=0, page_size=10) -
 async def get_courses(conn: asyncpg.Connection):
     return await conn.fetch(
         """
-        select id, name, lms_url from autostudent.courses;
+        select id, name, lms_url from autostudent.courses
+        order by lms_url
+        ;
         """
     )
 
@@ -59,7 +61,7 @@ async def get_courses_with_summaries(conn: asyncpg.Connection):
                                join autostudent.videos_summarization vs on l.id = vs.lesson_id
                       where l.course_id = c.id
                   )
-        order by c.id
+        order by c.lms_url
         ;
         """
     )
@@ -68,7 +70,9 @@ async def get_lessons_by_course(conn: asyncpg.Connection, course_id):
     return await conn.fetch(
         """
         select id, name, lesson_number, lms_url from autostudent.lessons
-        where course_id = $1;
+        where course_id = $1
+        order by lms_url
+        ;
         """,
         course_id,
     )
