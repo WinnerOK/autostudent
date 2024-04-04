@@ -50,7 +50,7 @@ async def search_handler(
 
         _, keypoint_id = h['id'].split('_')
         print(f"getting resp for {h}")
-        msg_hits.append(f"{course_name}: {fmt.mlink(lesson_name, lesson_url)}\n{markdown_keypoints(video_url, [summary[int(keypoint_id) - 1]])}")
+        msg_hits.append(f"{fmt.escape_markdown(course_name)}: {fmt.mlink(lesson_name, lesson_url)}\n{markdown_keypoints(video_url, [summary[int(keypoint_id) - 1]])}")
 
     msg = "Возможно, вам подойдут эти вхождения:\n" + "\n\n".join(msg_hits).strip()
     for part in smart_split(msg):
