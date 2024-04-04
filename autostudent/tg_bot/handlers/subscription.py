@@ -12,9 +12,14 @@ async def subscription_handler(
     bot: AsyncTeleBot,
     pool: asyncpg.Pool,
 ):
+    courses_to_request = bot.settings.course_page_size + 1
     async with pool.acquire() as conn:  # type: asyncpg.Connection
-        courses = await get_courses_page(conn, page_size=bot.settings.course_page_size)
+        courses = await get_courses_page(conn, page_size=courses_to_request)
         current_subscriptions = await get_chat_subscriptions(conn, message.chat.id)
+
+    courses_found = len(courses)
+    if courses:
+        courses.pop()
 
     await bot.reply_to(
         message,
@@ -23,7 +28,7 @@ async def subscription_handler(
             courses=courses,
             current_subscriptions=current_subscriptions,
             current_page=0,
-            has_more=len(courses) <=bot.settings.course_page_size,
+            has_more=(courses_found == courses_to_request),
             subscription_icons=bot.settings.subscription_icons,
         )
     )
