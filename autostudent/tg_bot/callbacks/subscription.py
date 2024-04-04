@@ -65,9 +65,15 @@ async def subscription_change_page_callback(
     callback_data: dict = subscription_change_page.parse(callback_data=call.data)
     page_num = int(callback_data['page_num'])
 
+    courses_to_request = bot.settings.course_page_size + 1
+
     async with pool.acquire() as conn:  # type: asyncpg.Connection
-        courses = await get_courses_page(conn, page_num=page_num, page_size=bot.settings.course_page_size)
+        courses = await get_courses_page(conn, page_num=page_num, page_size=courses_to_request)
         current_subscriptions = await get_chat_subscriptions(conn, call.message.chat.id)
+
+    courses_found = len(courses)
+    if courses:
+        courses.pop()
 
     reply_markup = call.message.reply_markup
     reply_markup.keyboard[-2][-1].text = ''
@@ -76,7 +82,7 @@ async def subscription_change_page_callback(
             courses=courses,
             current_subscriptions=current_subscriptions,
             current_page=page_num,
-            has_more=len(courses) <= bot.settings.course_page_size,
+            has_more=(courses_found == courses_to_request),
             subscription_icons=bot.settings.subscription_icons,
         )
     await bot.edit_message_reply_markup(
