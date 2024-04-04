@@ -64,7 +64,17 @@ async def get_summary(conn: asyncpg.Connection, lesson_id):
 async def get_summaries(conn: asyncpg.Connection, lesson_ids):
     return await conn.fetch(
         """
-        select lesson_id, video_url, summarization from autostudent.videos_summarization where lesson_id = any($1::bigint[]);
+        select
+            vs.lesson_id as lesson_id,
+            vs.video_url as video_url,
+            vs.summarization as summarization,
+            l.name as lesson_name,
+            l.lms_url as lesson_url,
+            c.name as course_name
+        from autostudent.videos_summarization vs
+        join autostudent.lessons l on l.id = vs.lesson_id
+        join autostudent.courses c on c.id = l.course_id
+        where lesson_id = any($1::bigint[]);
         """,
         list(map(int, lesson_ids)),
     )

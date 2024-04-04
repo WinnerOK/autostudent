@@ -6,6 +6,8 @@ import meilisearch
 from telebot.async_telebot import AsyncTeleBot
 from telebot.types import Message, LinkPreviewOptions
 from telebot.util import smart_split
+import telebot.formatting as fmt
+
 
 from autostudent.repository.summarization import get_summary, get_summaries
 from autostudent.repository.summary_format import markdown_keypoints
@@ -33,16 +35,22 @@ async def search_handler(
         summaries = await get_summaries(conn, [h['lesson_id'] for h in hits])
 
     summary_by_lesson = {
-        int(s['lesson_id']): (s['video_url'], json.loads(s['summarization']))
+        int(s['lesson_id']): s
         for s in summaries
     }
 
     msg_hits = []
     for h in hits:
-        video_url, summary = summary_by_lesson[h['lesson_id']]
+        summary_data = summary_by_lesson[h['lesson_id']]
+        video_url = summary_data['video_url']
+        summary = json.loads(summary_data['summarization'])
+        lesson_name = summary_data['lesson_name']
+        lesson_url = summary_data['lesson_url']
+        course_name = summary_data['course_name']
+
         _, keypoint_id = h['id'].split('_')
         print(f"getting resp for {h}")
-        msg_hits.append(markdown_keypoints(video_url, [summary[int(keypoint_id)-1]]))
+        msg_hits.append(f"{course_name}: {fmt.mlink(lesson_name, lesson_url)}\n{markdown_keypoints(video_url, [summary[int(keypoint_id) - 1]])}")
 
     msg = "Возможно, вам подойдут эти вхождения:\n" + "\n\n".join(msg_hits).strip()
     for part in smart_split(msg):
