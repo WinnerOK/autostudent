@@ -8,7 +8,7 @@
 - [Презентация](https://docs.google.com/presentation/d/17xwNR-Gmvw6v3n3XsdJuMlz4o1mMmhP31WzcBCtypms)
 - [Подробнее про проект](https://cs-uni.ru/index.php?title=Автостудент_DDSpring2024#.D0.A1.D1.81.D1.8B.D0.BB.D0.BA.D0.B8)
 
-## Setup TL;DR
+## Local Setup TL;DR
 
 Поставить Python 3.11
 
@@ -27,6 +27,8 @@ make build-docker
 ```bash
 docker compose up rmq redis db db-migration taskiq-worker taskiq-sheduler meilisearch
 ```
+
+На сервере достаточно сформировать `.env` и запустить `docker compose up`
 
 ## Installation
 
