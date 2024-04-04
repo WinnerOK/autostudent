@@ -1,6 +1,14 @@
 # autostudent
 
-## TL;DR
+Проект в рамках хакатона ITMO DevDays 2024
+
+Автостудент суммаризирует лекции из LMS программы MHS, и присылает суммаризации живым студентам. 
+Так же доступен полнотекстовый поиск по уже обработанным суммаризациям.
+
+- [Презентация](https://docs.google.com/presentation/d/17xwNR-Gmvw6v3n3XsdJuMlz4o1mMmhP31WzcBCtypms)
+- [Подробнее про проект](https://cs-uni.ru/index.php?title=Автостудент_DDSpring2024#.D0.A1.D1.81.D1.8B.D0.BB.D0.BA.D0.B8)
+
+## Setup TL;DR
 
 Поставить Python 3.11
 
