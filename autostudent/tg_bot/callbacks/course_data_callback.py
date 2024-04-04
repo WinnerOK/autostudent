@@ -19,6 +19,9 @@ async def course_data_callback(
     async with pool.acquire() as conn:  # type: asyncpg.Connection
         lessons = await get_summarized_lessons(conn, callback_data["course"])
 
-    await bot.send_message(
-        call.message.chat.id, "Выберите занятие:", reply_markup=lesson_markup(lessons)
+    await bot.edit_message_text(
+        chat_id=call.message.chat.id,
+        message_id=call.message.id,
+        text="Выберите занятие:",
+        reply_markup=lesson_markup(lessons)
     )

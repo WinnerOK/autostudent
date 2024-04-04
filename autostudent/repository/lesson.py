@@ -45,7 +45,9 @@ async def get_summarized_lessons(conn: asyncpg.Connection, course_id):
             ON lessons.id = videos_summarization.lesson_id
         WHERE
             lessons.course_id = $1 AND
-            videos_summarization.summarization IS NOT NULL;
+            videos_summarization.summarization IS NOT NULL
+        order by lessons.id
+        ;
         """,
         int(course_id),
     )
