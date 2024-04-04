@@ -5,6 +5,7 @@ import autostudent.repository.course as course_repo
 import autostudent.repository.lesson as lesson_repo
 import autostudent.summarize as summarize
 import asyncpg
+import meilisearch
 
 logging.basicConfig(
     level=logging.INFO,
@@ -12,7 +13,7 @@ logging.basicConfig(
 )
 
 
-async def process_courses_and_lessons(db_pool: asyncpg.Pool):
+async def process_courses_and_lessons(db_pool: asyncpg.Pool, meilisearch_client: meilisearch.Client):
     for semester in reversed(scraper.terms):  # Проходимся по семестрам с конца
         logging.info(f"Processing semester: {semester}")
         courses = scraper.get_courses(semester)
@@ -53,6 +54,6 @@ async def process_courses_and_lessons(db_pool: asyncpg.Pool):
                                         conn=conn,
                                     )
                                     # TODO: вызов jobы которая делает рассылку
-                                    # TODO: Сохранение в бд для поиска по тексту
+                                    await summarize.add_summary_to_meilisearch(summary, lesson_id, meilisearch_client)
                     except Exception:
                         logging.exception(f"An error occured while parsing course {course}")

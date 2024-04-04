@@ -27,6 +27,12 @@ class Settings(BaseSettings):
 
     generate_summarization_endpoint: str = Field()
     generate_summarization_timeout_seconds: int = 90
+
+
+    add_to_meilisearch_timeout_seconds: int = 2
+    add_to_meilisearch_poll_interval_ms: int = 1000
+
     summary_polling_time_multiplier: int = 3
 
     admin_list: set[int] = {182092910, 862606153, 371003779, 378427214, 58301043}
+
