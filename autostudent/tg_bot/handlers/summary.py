@@ -1,6 +1,6 @@
 from textwrap import dedent
 import asyncpg
-from autostudent.repository.course import get_courses
+from autostudent.repository.course import get_courses_with_summaries
 
 from telebot.async_telebot import AsyncTeleBot
 from telebot.types import Message
@@ -14,7 +14,7 @@ async def summary_handler(
     pool: asyncpg.Pool,
 ):
     async with pool.acquire() as conn:  # type: asyncpg.Connection
-        courses = await get_courses(conn)
+        courses = await get_courses_with_summaries(conn)
 
     await bot.send_message(
         message.chat.id,
