@@ -86,6 +86,12 @@ def register_handlers(bot: AsyncTeleBot, pool: asyncpg.Pool) -> None:
         pass_bot=True,
     )
 
+    bot.register_message_handler(
+        handlers.force_scrapping_handler,
+        commands=["force_scrap"],
+        pass_bot=True,
+    )
+
     bot.register_callback_query_handler(
         partial(
             callbacks.course_data_callback,
@@ -139,6 +145,11 @@ async def main():
         raise RuntimeError(msg) from e
 
     await broker.startup()
+
+    # import autostudent.parser as parser
+    # async with pool.acquire() as conn:
+    #     async with conn.transaction():
+    #         await parser.process_courses_and_lessons(conn)
 
     # Пример как стартануть таску. Результат таски можно не дожидаться. Она все-равно выполнится
     # task = await send_notifications.kiq(course_id=1)

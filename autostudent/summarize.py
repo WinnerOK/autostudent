@@ -1,4 +1,6 @@
 import asyncio
+import logging
+
 import asyncpg
 import httpx
 import json
@@ -35,7 +37,7 @@ async def _poll_summarization_task(
 
     deadline = int(time.time()) + settings.generate_summarization_timeout_seconds
 
-    await asyncio.sleep(poll_interval_ms / 1000)
+    await asyncio.sleep(poll_interval_ms * settings.summary_polling_time_multiplier / 1000)
 
     poll_summarization_task_request_body = {
         "session_id": session_id,
@@ -53,15 +55,20 @@ async def _poll_summarization_task(
         try:
             response.raise_for_status()
         except httpx.HTTPStatusError as exc:
-            raise Exception(
-                error_message_template.format(
-                    reason=f"error response {exc.response.status_code} while requesting {exc.request.url!r}.",
+            if exc.response.status_code == 429:
+                sleep_for_seconds = settings.summary_polling_time_multiplier * int(exc.response.headers.get('retry-after', 10))
+                await asyncio.sleep(sleep_for_seconds)
+                continue
+            else:
+                raise Exception(
+                    error_message_template.format(
+                        reason=f"error response {exc.response.status_code} while requesting {exc.request.url!r}.",
+                    )
                 )
-            )
 
         response_json = response.json()
         if "keypoints" in response_json and response_json["status_code"] == 0:
-            return json.dumps(response_json["keypoints"])
+            return json.dumps(response_json["keypoints"], ensure_ascii=False)
         elif "error_code" in response_json:
             raise Exception(
                 error_message_template.format(
@@ -70,7 +77,7 @@ async def _poll_summarization_task(
             )
 
         poll_interval_ms = int(response_json.get("poll_interval_ms", 1000))
-        await asyncio.sleep(poll_interval_ms / 1000)
+        await asyncio.sleep(poll_interval_ms * settings.summary_polling_time_multiplier / 1000)
 
     raise Exception(
         error_message_template.format(
@@ -107,20 +114,28 @@ async def get_summarization(
     }
 
     async with httpx.AsyncClient(http2=True) as http_client:
-        response = await http_client.post(
-            url=settings.generate_summarization_endpoint,
-            json=create_summarization_task_request_body,
-            headers=REQUEST_HEADERS,
-        )
+        response = None
 
-        try:
-            response.raise_for_status()
-        except httpx.HTTPStatusError as exc:
-            raise Exception(
-                error_message_template.format(
-                    reason=f"error response {exc.response.status_code} while requesting {exc.request.url!r}.",
-                )
+        while True:
+            response = await http_client.post(
+                url=settings.generate_summarization_endpoint,
+                json=create_summarization_task_request_body,
+                headers=REQUEST_HEADERS,
             )
+
+            try:
+                response.raise_for_status()
+                break
+            except httpx.HTTPStatusError as exc:
+                if exc.response.status_code == 429:
+                    sleep_for_seconds = settings.summary_polling_time_multiplier * int(exc.response.headers.get('retry-after', 10))
+                    await asyncio.sleep(sleep_for_seconds)
+                else:
+                    raise Exception(
+                        error_message_template.format(
+                            reason=f"error response {exc.response.status_code} while requesting {exc.request.url!r}.",
+                        )
+                    )
 
         response_json = response.json()
 
@@ -138,7 +153,7 @@ async def get_summarization(
                 )
             )
         elif "keypoints" in response_json:
-            summarization = json.dumps(response_json["keypoints"])
+            summarization = json.dumps(response_json["keypoints"], ensure_ascii=False)
         else:
             raise Exception(
                 error_message_template.format(
@@ -155,7 +170,7 @@ async def get_summarization(
         lesson_id=lesson_id,
         summarization=summarization,
     )
-
+    logging.info(f"Stored summary for lesson {lesson_id}: {video_url}")
     return summarization
 
 

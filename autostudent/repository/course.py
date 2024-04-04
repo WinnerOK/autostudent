@@ -48,6 +48,21 @@ async def get_courses(conn: asyncpg.Connection):
         """
     )
 
+async def get_courses_with_summaries(conn: asyncpg.Connection):
+    return await conn.fetch(
+        """
+        select c.id, c.name, c.lms_url
+        from autostudent.courses c
+        where exists(
+                      select 1
+                      from autostudent.lessons l
+                               join autostudent.videos_summarization vs on l.id = vs.lesson_id
+                      where l.course_id = c.id
+                  )
+        order by c.id
+        ;
+        """
+    )
 
 async def get_lessons_by_course(conn: asyncpg.Connection, course_id):
     return await conn.fetch(
@@ -60,7 +75,7 @@ async def get_lessons_by_course(conn: asyncpg.Connection, course_id):
 
 
 async def insert_course(conn: asyncpg.Connection, name, lms_url):
-    return await conn.execute(
+    res = await conn.fetchrow(
         """
         insert into autostudent.courses (name, lms_url) values ($1, $2)
         returning id;
@@ -68,6 +83,8 @@ async def insert_course(conn: asyncpg.Connection, name, lms_url):
         name,
         lms_url,
     )
+
+    return res[0]
 
 
 async def check_exsisting_course(conn: asyncpg.Connection, title, url):

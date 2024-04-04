@@ -43,7 +43,7 @@ async def insert_summarization_for_video(
                 $1,
                 $2,
                 $3
-            );
+            ) on conflict do nothing ;
             """,
         ),
         video_url,
@@ -52,9 +52,9 @@ async def insert_summarization_for_video(
     )
 
 async def get_summary(conn: asyncpg.Connection, lesson_id):
-    return await conn.fetch(
+    return await conn.fetchrow(
         """
-        select summarization from autostudent.videos_summarization where lesson_id = $1;
+        select video_url, summarization from autostudent.videos_summarization where lesson_id = $1;
         """,
         int(lesson_id),
     )

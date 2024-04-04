@@ -6,6 +6,7 @@ from autostudent.tg_bot.handlers.help import (
 from autostudent.tg_bot.handlers.start import start_handler
 from autostudent.tg_bot.handlers.subscription import subscription_handler
 from autostudent.tg_bot.handlers.summary import summary_handler
+from autostudent.tg_bot.handlers.admin import force_scrapping_handler
 
 __all__ = [
     "start_handler",
@@ -14,4 +15,5 @@ __all__ = [
     "BOT_COMMANDS",
     "subscription_handler",
     "summary_handler",
+    "force_scrapping_handler",
 ]
