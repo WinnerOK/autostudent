@@ -7,9 +7,9 @@ from telebot.asyncio_filters import AdvancedCustomFilter
 from telebot.callback_data import CallbackDataFilter
 from telebot.types import CallbackQuery
 
+from autostudent.broker import broker
 from autostudent.settings import Settings
 from autostudent.tg_bot import callbacks, handlers
-from autostudent.broker import broker, add_one
 from autostudent.tg_bot.callbacks.subscription import (
     subscription_status_callback,
     subscription_done_callback,
@@ -20,9 +20,6 @@ from autostudent.tg_bot.callbacks.types import (
     subscription_done,
     subscription_change_page,
 )
-
-from autostudent.tasks import send_notifications
-from autostudent.repository.subscription import get_course_subscribers
 
 
 def register_handlers(bot: AsyncTeleBot, pool: asyncpg.Pool) -> None:

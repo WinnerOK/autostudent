@@ -14,7 +14,7 @@ x-application-environment: &app-environment
 services:
   taskiq-worker:
     image: autostudent:latest
-    command: ["taskiq", "worker", "autostudent.broker:broker", "autostudent.tasks"] # по дефолту импортирует к брокеру все tasks.py
+    command: ["taskiq", "worker", "autostudent.broker:broker", "autostudent.tasks", "autostudent.notification_task"] # по дефолту импортирует к брокеру все tasks.py
     environment: *app-environment
     depends_on: &taskiq-deps
       db-migration:
@@ -28,7 +28,7 @@ services:
 
   taskiq-sheduler:
     image: autostudent:latest
-    command: ["taskiq", "scheduler", "autostudent.broker:scheduler", "autostudent.tasks"] # по дефолту импортирует к шедулеру все tasks.py
+    command: ["taskiq", "scheduler", "autostudent.broker:scheduler", "autostudent.tasks", "autostudent.notification_task"] # по дефолту импортирует к шедулеру все tasks.py
     environment: *app-environment
     depends_on: &taskiq-deps
       db-migration:
@@ -46,7 +46,7 @@ services:
       - ./shared/meili_data:/meili_data
     environment:
       MEILI_ENV: development # TODO: change in real prod
-      MEILI_HTTP_ADDR: "localhost:${MEILI_PORT}"
+      MEILI_HTTP_ADDR: "0.0.0.0:${MEILI_PORT}"
     ports:
       - "127.0.0.1:7700:${MEILI_PORT}"
     healthcheck:

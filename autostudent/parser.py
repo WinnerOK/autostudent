@@ -7,6 +7,8 @@ import autostudent.summarize as summarize
 import asyncpg
 import meilisearch
 
+from autostudent.notification_task import send_notifications
+
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s %(processName)s %(threadName)s | %(message)s',
@@ -53,7 +55,13 @@ async def process_courses_and_lessons(db_pool: asyncpg.Pool, meilisearch_client:
                                         lesson_id=lesson_id,
                                         conn=conn,
                                     )
-                                    # TODO: вызов jobы которая делает рассылку
+                                    await send_notifications.kiq(
+                                        course_id=course_id,
+                                        course_name=course['title'],
+                                        lecture_name=lesson["title"],
+                                        video_url=lesson["video_url"],
+                                        summary=summary,
+                                    )
                                     await summarize.add_summary_to_meilisearch(summary, lesson_id, meilisearch_client)
                     except Exception:
                         logging.exception(f"An error occured while parsing course {course}")
