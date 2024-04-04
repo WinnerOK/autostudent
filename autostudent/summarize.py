@@ -175,8 +175,8 @@ async def get_summarization(
 
 
 async def _wait_for_meilisearch_task(
-    task_id: int, 
-    client: meilisearch.Client, 
+    task_id: int,
+    client: meilisearch.Client,
     poll_interval_ms: int,
     timeout_seconds: int,
 ):
@@ -194,7 +194,7 @@ async def _wait_for_meilisearch_task(
 
 
 async def add_summary_to_meilisearch(
-    summary: str, 
+    summary: str,
     lesson_id: int,
     client: meilisearch.Client,
     retries = 3,
@@ -236,6 +236,7 @@ async def search_for_summary_keypoint(
     index = client.index(MEILISEARCH_INDEX_NAME)
 
     retry_num = 0
+    response = None
     while retry_num < retries:
         try:
             response = index.search(query, {'limit': top_k, 'attributesToSearchOn': ['theses']})
@@ -243,4 +244,4 @@ async def search_for_summary_keypoint(
         except Exception:
             retry_num += 1
 
-    return response['hits']
+    return response and response['hits']

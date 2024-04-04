@@ -2,6 +2,7 @@ import asyncio
 from functools import partial
 
 import asyncpg
+import meilisearch
 from telebot.async_telebot import AsyncTeleBot
 from telebot.asyncio_filters import AdvancedCustomFilter
 from telebot.callback_data import CallbackDataFilter
@@ -22,7 +23,11 @@ from autostudent.tg_bot.callbacks.types import (
 )
 
 
-def register_handlers(bot: AsyncTeleBot, pool: asyncpg.Pool) -> None:
+def register_handlers(
+    bot: AsyncTeleBot,
+    pool: asyncpg.Pool,
+    meili_client: meilisearch.Client,
+) -> None:
     bot.register_message_handler(
         partial(
             handlers.start_handler,
@@ -119,6 +124,16 @@ def register_handlers(bot: AsyncTeleBot, pool: asyncpg.Pool) -> None:
         pass_bot=True,
     )
 
+    bot.register_message_handler(
+        partial(
+            handlers.search_handler,
+            pool=pool,
+            meili_client=meili_client,
+        ),
+        content_types=['text'],
+        pass_bot=True,
+    )
+
 
 class CallbackFilter(AdvancedCustomFilter):
     key = "config"
@@ -143,34 +158,14 @@ async def main():
 
     await broker.startup()
 
-    # import autostudent.parser as parser
-    # async with pool.acquire() as conn:
-    #     async with conn.transaction():
-    #         await parser.process_courses_and_lessons(conn)
-
-    # Пример как стартануть таску. Результат таски можно не дожидаться. Она все-равно выполнится
-    # task = await send_notifications.kiq(course_id=1)
-    # result = await task.wait_result()
-    # print(f"Task execution took: {result.execution_time} seconds.")
-    # if not result.is_err:
-    #     print(f"Returned value: {result.return_value}")
-    # else:
-    #     print("Error found while executing task.")
+    meili_client = meilisearch.Client(settings.meili_dsn)
 
     bot = AsyncTeleBot(settings.telegram_token)
     bot.settings = settings
     bot.add_custom_filter(CallbackFilter())
-    register_handlers(bot, pool)
+    register_handlers(bot, pool, meili_client)
     await bot.delete_my_commands()
     await bot.set_my_commands(handlers.BOT_COMMANDS)
-
-    # async with pool.acquire() as conn:
-    #     subs = await get_course_subscribers(conn, 1)
-    #     for sub in subs:
-    #         await bot.send_message(
-    #             sub,
-    #             f""" Нотификация """,
-    #         )
 
     print("Bot is started")
     try:
