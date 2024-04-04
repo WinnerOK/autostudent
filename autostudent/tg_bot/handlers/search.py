@@ -29,6 +29,7 @@ async def search_handler(
 
     conn: asyncpg.Connection
     async with pool.acquire() as conn:
+        print("finding summaries")
         summaries = await get_summaries(conn, [h['lesson_id'] for h in hits])
 
     summary_by_lesson = {
@@ -40,6 +41,7 @@ async def search_handler(
     for h in hits:
         video_url, summary = summary_by_lesson[h['lesson_id']]
         _, keypoint_id = h['id'].split('_')
+        print(f"getting resp for {h}")
         msg_hits.append(markdown_keypoints(video_url, [summary[keypoint_id-1]]))
 
     msg = "Возможно, вам подойдут эти вхождения:\n" + "\n\n".join(msg_hits).strip()
