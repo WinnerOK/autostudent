@@ -15,7 +15,7 @@ def get_page(url, params=None) -> requests.Response:
             "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 YaBrowser/24.1.0.0 Safari/537.36"
         }
     )
-    session.cookies.update({"Session_id": "3:1711962874.5.0.1694588538491:EgABAAAAAAAoZIGwuAYCKg:cd.1.2:1|204475351.-1.302.3:1694588538|1905105612.3244740.2.2:3244740.3:1697833278|3:10285375.515051.xFBWu-GM9zvLUleVEv1gdauvKe4"})
+    session.cookies.update({"Session_id": settings.yandex_session_id})
     return session.get(url=url, params=params)
 
 
