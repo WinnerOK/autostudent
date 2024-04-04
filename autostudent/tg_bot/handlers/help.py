@@ -15,6 +15,7 @@ def get_help_message() -> str:
     return (
         "Доступные команды:\n"
         + "\n".join([f"{cmd.command} - {cmd.description}" for cmd in BOT_COMMANDS])
+        + "\n или просто напиши мне любой текст, а я поищу его в суммаризациях"
     )
 
 
